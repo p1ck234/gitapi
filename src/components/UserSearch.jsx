@@ -17,11 +17,10 @@ function UserSearch() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [limitExceeded, setLimitExceeded] = useState(false);
-  const [loading, setLoading] = useState(false); // Для отслеживания загрузки поиска
-  const [loadingUserDetails, setLoadingUserDetails] = useState(false); // Для отслеживания загрузки деталей пользователя
-
+  const [loading, setLoading] = useState(false); 
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false); 
   const fetchUsers = async () => {
-    setLoading(true); // Начало загрузки поиска
+    setLoading(true); 
     try {
       const response = await axiosInstance.get(
         `/search/users?q=${query}&page=${page}&per_page=10`
@@ -29,25 +28,25 @@ function UserSearch() {
       const usersWithRepos = await Promise.all(
         response.data.items.map(async (user) => {
           try {
-            setLoadingUserDetails(true); // Начало загрузки деталей пользователя
+            setLoadingUserDetails(true);
             const userDetails = await axiosInstance.get(`/users/${user.login}`);
-            setLoadingUserDetails(false); // Конец загрузки деталей пользователя
+            setLoadingUserDetails(false);
             return { ...user, public_repos: userDetails.data.public_repos };
           } catch (error) {
             if (error.response.status === 403) {
-              setLimitExceeded(true); // Если лимит превышен
+              setLimitExceeded(true); 
             }
-            return user; // Возвращаем пользователя без репозиториев
+            return user; 
           }
         })
       );
       setUsers(usersWithRepos);
       setTotalPages(Math.ceil(response.data.total_count / 10));
-      setLimitExceeded(false); // Сбрасываем флаг, если запросы успешны
+      setLimitExceeded(false);
     } catch (error) {
       console.error("Error fetching users", error);
     }
-    setLoading(false); // Конец загрузки поиска
+    setLoading(false);
   };
 
   useEffect(() => {
