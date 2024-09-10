@@ -17,8 +17,11 @@ function UserSearch() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [limitExceeded, setLimitExceeded] = useState(false);
+  const [loading, setLoading] = useState(false); // Для отслеживания загрузки поиска
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false); // Для отслеживания загрузки деталей пользователя
 
   const fetchUsers = async () => {
+    setLoading(true); // Начало загрузки поиска
     try {
       const response = await axiosInstance.get(
         `/search/users?q=${query}&page=${page}&per_page=10`
@@ -26,7 +29,9 @@ function UserSearch() {
       const usersWithRepos = await Promise.all(
         response.data.items.map(async (user) => {
           try {
+            setLoadingUserDetails(true); // Начало загрузки деталей пользователя
             const userDetails = await axiosInstance.get(`/users/${user.login}`);
+            setLoadingUserDetails(false); // Конец загрузки деталей пользователя
             return { ...user, public_repos: userDetails.data.public_repos };
           } catch (error) {
             if (error.response.status === 403) {
@@ -42,6 +47,7 @@ function UserSearch() {
     } catch (error) {
       console.error("Error fetching users", error);
     }
+    setLoading(false); // Конец загрузки поиска
   };
 
   useEffect(() => {
@@ -90,42 +96,57 @@ function UserSearch() {
         Sort by Repositories ({sortOrder === "asc" ? "Ascending" : "Descending"}
         )
       </button>
+
+      {loading ? (
+        <p>Loading users...</p>
+      ) : (
+        <div>
+          {users.map((user) => (
+            <div key={user.id} onClick={() => handleUserClick(user)}>
+              <p>
+                {user.login} - Repos: {user.public_repos || "N/A"}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div>
+        <button onClick={handlePrevPage} disabled={page === 1 || loading}>
+          Previous
+        </button>
+        <button
+          onClick={handleNextPage}
+          disabled={page === totalPages || loading}
+        >
+          Next
+        </button>
+      </div>
       {limitExceeded && (
         <p style={{ color: "red" }}>
           API rate limit exceeded. Please try again later or use an API token.
         </p>
       )}
-      <div>
-        {users.map((user) => (
-          <div key={user.id} onClick={() => handleUserClick(user)}>
-            <p>
-              {user.login} - Repos: {user.public_repos || "N/A"}
-            </p>
-          </div>
-        ))}
-      </div>
-      <div>
-        <button onClick={handlePrevPage} disabled={page === 1}>
-          Previous
-        </button>
-        <button onClick={handleNextPage} disabled={page === totalPages}>
-          Next
-        </button>
-      </div>
       {selectedUser && (
         <div>
-          <h3>{selectedUser.login}</h3>
-          <p>ID: {selectedUser.id}</p>
-          <p>Type: {selectedUser.type}</p>
-          <p>
-            <a
-              href={selectedUser.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              GitHub Profile
-            </a>
-          </p>
+          {loadingUserDetails ? (
+            <p>Loading user details...</p>
+          ) : (
+            <>
+              <h3>{selectedUser.login}</h3>
+              <p>ID: {selectedUser.id}</p>
+              <p>Type: {selectedUser.type}</p>
+              <p>
+                <a
+                  href={selectedUser.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub Profile
+                </a>
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>
