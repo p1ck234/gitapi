@@ -1,8 +1,12 @@
-# React + Vite
+# Приложение для работы с API GitHub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Проект сделан на React+JS
 
-Currently, two official plugins are available:
+Для запуска следует использовать 
+```bash
+npm install
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+В компоненте UserSearch можно найти место куда вставить токен авторизации github, чтобы был лимит на запросы больше.
+const GITHUB_TOKEN = ""; // Укажите ваш GitHub токен, если хотите использовать авторизованные запросы
